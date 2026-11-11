@@ -1,0 +1,33 @@
+CREATE TABLE IF NOT EXISTS app_users (
+  id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT,
+  open_id VARCHAR(191) NOT NULL,
+  display_name VARCHAR(255) NULL,
+  email VARCHAR(320) NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (id),
+  UNIQUE KEY uq_app_users_open_id (open_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS app_sessions (
+  token_hash CHAR(64) CHARACTER SET ascii COLLATE ascii_bin NOT NULL,
+  user_id BIGINT UNSIGNED NOT NULL,
+  expires_at DATETIME NOT NULL,
+  frontend_origin VARCHAR(2048) NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  PRIMARY KEY (token_hash),
+  KEY ix_app_sessions_user_id (user_id),
+  KEY ix_app_sessions_expires_at (expires_at),
+  CONSTRAINT fk_app_sessions_user FOREIGN KEY (user_id) REFERENCES app_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+CREATE TABLE IF NOT EXISTS user_workspaces (
+  user_id BIGINT UNSIGNED NOT NULL,
+  revision BIGINT UNSIGNED NOT NULL DEFAULT 1,
+  schema_version INT UNSIGNED NOT NULL DEFAULT 1,
+  payload JSON NOT NULL,
+  created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (user_id),
+  CONSTRAINT fk_user_workspaces_user FOREIGN KEY (user_id) REFERENCES app_users (id) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
